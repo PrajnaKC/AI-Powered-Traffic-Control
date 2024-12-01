@@ -2,20 +2,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def fitness_function(C, g, x, c):
+    if c <= 0:
+        return float('inf')  # Assign a large penalty for invalid capacity.
+
     a = (1 - (g / C)) ** 2
-    p = 1 - ((g / C) * x)
+    p = max(0.0001, 1 - ((g / C) * x))   # Avoid division by zero.
     d1i = (0.38 * C * a) / p
 
     a2 = 173 * (x ** 2)
-    ri1 = np.sqrt((x - 1) + (x - 1) ** 2 + ((16 * x) / c))
+    sqrt_arg = (x - 1) + (x - 1) ** 2 + ((16 * x) / c)
+    ri1 = np.sqrt(max(0, sqrt_arg))  # Ensure argument to sqrt is non-negative.
 
     d2i = a2 * ri1
 
     return d1i + d2i
 
+
 def initialize_population(pop_size, num_lights, green_min, green_max, cycle_time, cars):
     population = []
-    road_capacity = [20] * num_lights
+    road_capacity = [40] * num_lights
     road_congestion = np.array(road_capacity) - np.array(cars)
     road_congestion = road_congestion / np.array(road_capacity)
 
@@ -28,9 +33,11 @@ def initialize_population(pop_size, num_lights, green_min, green_max, cycle_time
 
 def roulette_wheel_selection(population, total_delays, beta):
     worst_delay = max(total_delays)
-    probabilities = np.exp(-beta * np.array(total_delays) / worst_delay)
-    probabilities /= np.sum(probabilities)
+    probabilities = np.exp(-beta * np.array(total_delays) / max(1, worst_delay))  # Avoid division by zero.
+    probabilities /= max(1e-9, np.sum(probabilities))  # Normalize and avoid division by zero.
+    probabilities = np.nan_to_num(probabilities, nan=1.0 / len(population))  # Replace NaNs with equal probabilities.
     return np.random.choice(len(population), p=probabilities)
+
 
 def crossover(parent1, parent2, num_lights):
     point = np.random.randint(1, num_lights)

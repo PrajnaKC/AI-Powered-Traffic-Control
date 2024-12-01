@@ -15,16 +15,20 @@ def upload_files():
 
     video_paths = []
     for i, file in enumerate(files):
+        print(f"Attempting to save video {i}")
         video_path = os.path.join('uploads', f'video_{i}.mp4')
         file.save(video_path)
         video_paths.append(video_path)
+        print(f"Video {i} saved at {video_path}")
 
     num_cars_list = []
     for video_file in video_paths:
         num_cars = detect_cars(video_file)
+        print(f"Processed {video_file}, detected {num_cars} cars")
         num_cars_list.append(num_cars)
 
     result = optimize_traffic(num_cars_list)
+    print(f"Optimization result: {result}")
 
     return jsonify(result)
 

@@ -5,6 +5,7 @@ import numpy as np
 from scipy.signal import find_peaks
 
 def detect_cars(video_file):
+    print("got the video")
     # Set thresholds
     Conf_threshold = 0.4
     NMS_threshold = 0.4
